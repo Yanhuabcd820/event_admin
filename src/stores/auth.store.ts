@@ -14,10 +14,17 @@ export const useAuthStore = defineStore('auth', () => {
   const isLoggedIn = computed<boolean>(() => {
     return !!authState.value.token
   })
+  const restoreToken=()=>{
+    const tokenVal=localStorage.getItem("token")
+    if(tokenVal){
+      authState.value.token = tokenVal
+    }
+  }
 
   return {
     authState,
-    isLoggedIn
+    isLoggedIn,
+    restoreToken
   }
 })
 
