@@ -1,30 +1,69 @@
 import { defineStore } from 'pinia'
 import { ref,computed } from 'vue'
 
-type AuthState = {
-  token:string|null,
-}
+type AuthStatus = 'authenticated' | 'unauthenticated' | 'pending'
 
+type AuthToken = string|null
 
 export const useAuthStore = defineStore('auth', () => {
 
-  const authState = ref<AuthState>({
-    token: null
-  })
+  const authToken = ref<AuthToken>(null)
+  let verifyingPromise:Promise<void>|null=null
+  const authStatus = ref<AuthStatus>("unauthenticated")
   const isLoggedIn = computed<boolean>(() => {
-    return !!authState.value.token
+    return authStatus.value === "authenticated"
   })
+
   const restoreToken=()=>{
     const tokenVal=localStorage.getItem("token")
     if(tokenVal){
-      authState.value.token = tokenVal
+      authToken.value = tokenVal
     }
   }
 
+  const runVerifyToken = async()=>{
+    if(!authToken.value){
+      authStatus.value = 'unauthenticated'
+      return 
+    }
+
+    try{
+      const isValid = await tokenApi()
+      if(isValid){
+        authStatus.value = 'authenticated'
+      }else{
+        authStatus.value = 'unauthenticated'
+        authToken.value = null
+        localStorage.removeItem('token')
+      }
+    }catch{
+      authStatus.value = 'unauthenticated'
+      authToken.value = null
+      localStorage.removeItem('token')
+    }finally{
+      verifyingPromise=null
+    }
+
+  }
+
+  const verifyToken = async()=>{
+    if(!verifyingPromise){
+      authStatus.value = 'pending'
+      verifyingPromise = runVerifyToken()
+    }
+    return verifyingPromise
+  }
+  const tokenApi = async()=>{
+    // Call API to verify token return
+    return true
+  }
+
   return {
-    authState,
+    authToken,
+    authStatus,
     isLoggedIn,
-    restoreToken
+    restoreToken,
+    verifyToken
   }
 })
 
