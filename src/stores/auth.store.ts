@@ -28,8 +28,8 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     try{
-      const isValid = await tokenApi()
-      if(isValid){
+      const result = await tokenApi()
+      if(result){
         authStatus.value = 'authenticated'
       }else{
         authStatus.value = 'unauthenticated'
