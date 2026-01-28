@@ -1,7 +1,18 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import Header from '@/components/Header.vue'
+</script>
 
 <template>
- <router-view></router-view>
+  <div class="app-container">
+    <Header/>
+    <router-view></router-view>
+  </div>
 </template>
 
-<style scoped></style>
+<style>
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+</style>

@@ -1,0 +1,42 @@
+
+.el-form-item{
+  margin-bottom: 24px;
+  &__label {
+    font-size: 14px;
+    color: var(--el-text-color-primary);
+    font-weight: 400;
+    &::before {
+      color: var(--el-color-danger);
+    }
+  }
+  &__error {
+    font-size: 10px;
+    line-height: 20px;
+  }
+}
+
+.el-input__wrapper {
+  min-height: 32px;
+}
+
+.el-button.is-link.underline-link {
+  border-bottom: 1px solid currentColor;
+  text-decoration: none;
+  padding-bottom: 0;
+  border-radius: 0;
+  padding-bottom: 12px;
+  &:hover{
+    border-bottom: 1px solid currentColor;
+  }
+}
+.el-pagination{
+  .btn-prev,.btn-next{
+    background-color: transparent;
+    &:disabled{
+    background-color: transparent;
+    }
+  }
+  li{
+    background-color: transparent;
+  }
+}
