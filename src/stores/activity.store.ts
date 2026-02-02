@@ -8,9 +8,9 @@ import { ref,computed } from 'vue'
  * offlineExpired: 活動時間到期自動下架
  * draft: 活動草稿
 */
-type Status = 'online' | 'offlineManual' | 'offlineExpired' | 'draft' | 'all'
+export type Status = 'online' | 'offlineManual' | 'offlineExpired' | 'draft' | 'all'
 
-type Activity = {
+export type Activity = {
   title: string,
   id:string,
   status:Status,
@@ -50,7 +50,53 @@ type ActivityResponse = {
 export const useActivityStore = defineStore('activity', () => {
   const activityData = ref<ActivityData>({
     loadingStatus: 'idle',
-    list: [],
+    list: [
+      {
+        title: '秋遊會',
+        id:'1',
+        status:'online',
+        createdAt: '2026/01/07',
+        updatedAt:'2026/01/17',
+        startAt:'2026/02/27',
+        dueAt:'2026/03/05',
+      },
+      {
+        title: '2026馬到成功春酒會',
+        id:'2',
+        status:'offlineManual',
+        createdAt: '2026/02/07',
+        updatedAt:'2026/02/17',
+        startAt:'2026/03/27',
+        dueAt:'2026/05/05',
+      },
+      {
+        title: '馬到成功',
+        id:'3',
+        status:'offlineExpired',
+        createdAt: '2025/11/07',
+        updatedAt:'2025/12/17',
+        startAt:'2026/01/27',
+        dueAt:'2026/05/05',
+      },
+      {
+        title: '馬到成功',
+        id:'4',
+        status:'draft',
+        createdAt: '2025/01/07',
+        updatedAt:'2025/02/17',
+        startAt:'2025/11/27',
+        dueAt:'2025/12/05',
+      },
+      {
+        title: '2025馬到成功',
+        id:'5',
+        status:'draft',
+        createdAt: '2025/01/07',
+        updatedAt:'2025/02/17',
+        startAt:'2025/11/27',
+        dueAt:'2025/12/05',
+      },
+    ],
     filters:'all',
     pageInfo:{
       currentPage: 1,
