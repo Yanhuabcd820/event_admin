@@ -1,153 +1,99 @@
 import { defineStore } from 'pinia'
-import { ref,computed } from 'vue'
+import { ref,readonly } from 'vue'
+import {apiFetchActivitiesResponse,apiUpdateStatus} from '@/services/index.ts'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import type {Status, FilterStatus, LoadingStatus } from '@/types/activity'
+import type { Activity } from '@/services/index.ts'
 
-/**
- * Status - 活動狀態
- * online: 活動上線中
- * offlineManual: 活動已下架
- * offlineExpired: 活動時間到期自動下架
- * draft: 活動草稿
-*/
-export type Status = 'online' | 'offlineManual' | 'offlineExpired' | 'draft' | 'all'
-
-export type Activity = {
-  title: string,
-  id:string,
-  status:Status,
-  createdAt:string,
-  updatedAt:string,
-  startAt:string,
-  dueAt:string,
+// 狀態按鈕
+type StatusDetail = {
+  name: string
+  filterName: FilterStatus
 }
-/**
- * ActivityData.status - 活動資料讀取狀態
- * idle: 尚未讀取資料
- * loading: 資料讀取中
- * success: 資料讀取成功
- * error: 資料讀取失敗
-*/
+
+
 type ActivityData = {
-  loadingStatus:'idle' | 'loading' | 'success' | 'error',
+  loadingStatus:LoadingStatus,
   list:Activity[],
   pageInfo:{
     currentPage: number,
     pageSize: number,
-    totalPages: number
+    totalCount:number
   },
-  filters: Status, 
+  filters: FilterStatus, 
   error:string|null
 }
-type ActivityResponse = {
-  list:Activity[],
-  pageInfo:{
-    currentPage: number,
-    pageSize: number,
-    totalPages: number
-  },
-  filters: Status
-}
+
 
 export const useActivityStore = defineStore('activity', () => {
+
+  const statusEnumMap:Record<Status, string> = {
+    online: '活動上線中',
+    offlineManual: '活動已下架',
+    offlineExpired: '活動已過期',
+    draft: '活動草稿'
+  }
+
+  const formStatusOptions:StatusDetail[]=[
+    {
+      name:'活動上線中',
+      filterName:'online'
+    },
+    {
+      name:'活動已下架',
+      filterName:'offlineManual'
+    },
+    {
+      name:'活動已過期',
+      filterName:'offlineExpired'
+    },
+    {
+      name:'草稿',
+      filterName:'draft'
+    }
+  ]
+
+  // 篩選狀態按鈕
+  const filterButtons:StatusDetail[]=[  
+    {
+      name: '全部活動',
+      filterName: 'all'
+    },
+    ...formStatusOptions
+  ]
+  
   const activityData = ref<ActivityData>({
     loadingStatus: 'idle',
-    list: [
-      {
-        title: '秋遊會',
-        id:'1',
-        status:'online',
-        createdAt: '2026/01/07',
-        updatedAt:'2026/01/17',
-        startAt:'2026/02/27',
-        dueAt:'2026/03/05',
-      },
-      {
-        title: '2026馬到成功春酒會',
-        id:'2',
-        status:'offlineManual',
-        createdAt: '2026/02/07',
-        updatedAt:'2026/02/17',
-        startAt:'2026/03/27',
-        dueAt:'2026/05/05',
-      },
-      {
-        title: '馬到成功',
-        id:'3',
-        status:'offlineExpired',
-        createdAt: '2025/11/07',
-        updatedAt:'2025/12/17',
-        startAt:'2026/01/27',
-        dueAt:'2026/05/05',
-      },
-      {
-        title: '馬到成功',
-        id:'4',
-        status:'draft',
-        createdAt: '2025/01/07',
-        updatedAt:'2025/02/17',
-        startAt:'2025/11/27',
-        dueAt:'2025/12/05',
-      },
-      {
-        title: '2025馬到成功',
-        id:'5',
-        status:'draft',
-        createdAt: '2025/01/07',
-        updatedAt:'2025/02/17',
-        startAt:'2025/11/27',
-        dueAt:'2025/12/05',
-      },
-    ],
+    list: [],
     filters:'all',
     pageInfo:{
       currentPage: 1,
       pageSize: 10,
-      totalPages: 20
+      totalCount:0
     },
     error: null
   })
 
-  const activityResponse = async({filterStatus,currentPage}: {filterStatus: string | null, currentPage: number}):Promise<ActivityResponse>=>{
-    return{
-        list:[
-          {
-            title: 'title',
-            id:'vda123',
-            status: 'online',
-            createdAt:'20201213',
-            updatedAt:'20201213',
-            startAt:'20201213',
-            dueAt:'20201213',
-            
-          }
-        ],
-        pageInfo:{
-          currentPage: 2,
-          pageSize: 20,
-          totalPages: 20
-        },
-        filters: 'all', 
-      }
-    
-  }
 
   /**
    * fetchActivities - 用於根據當前頁面和篩選狀態從 API 獲取活動數據。
    * idle → loading → success
    * idle → loading → error
    * */
-  const fetchActivities = async ({currentPage=1, filterStatus='all'}) => {
+  const fetchActivities = async ({currentPage=1, filterStatus='all'}: { currentPage?: number; filterStatus?: FilterStatus } = {}) => {
+    
     if(activityData.value.loadingStatus === 'loading') return
 
     activityData.value.loadingStatus = 'loading'
-    activityData.value.error =''
+    activityData.value.error = null
     try{
-      const res = await activityResponse({filterStatus,currentPage})
+      const res = await apiFetchActivitiesResponse({filterStatus,currentPage})
 
       activityData.value.list = res.list
       activityData.value.pageInfo = {
         currentPage: res.pageInfo.currentPage,
         pageSize: res.pageInfo.pageSize,
-        totalPages: res.pageInfo.totalPages,
+        totalCount: res.pageInfo.totalCount,
       }
 
       activityData.value.loadingStatus = 'success'
@@ -159,17 +105,74 @@ export const useActivityStore = defineStore('activity', () => {
   }
 
   /**
-   * setFilter - 設置篩選狀態
+   * changeFilter - 設置篩選狀態
    */
-  const setFilter=(status: Status)=>{
+  const changeFilter = async(status: FilterStatus)=>{
     activityData.value.filters = status
     activityData.value.pageInfo.currentPage = 1
     activityData.value.list = []
     const params = {filterStatus:activityData.value.filters, currentPage:activityData.value.pageInfo.currentPage}
-    fetchActivities(params)
+    await fetchActivities(params)
   }
+
+  const changePage=async(page:number)=>{
+    activityData.value.pageInfo.currentPage = page
+    activityData.value.list = []
+    const params = {filterStatus:activityData.value.filters, currentPage:page}
+    await fetchActivities(params)
+  }
+
+
+  const offlineManualConfirm = async({ id, status }: { id: string, status: Status })=>{
+
+    const target = activityData.value.list.find(item => item.id === id) 
+    if (!target) return
+    const prevTargetStatus = target.status
+    
+    try{
+      await ElMessageBox.confirm(
+        '是否確認下架活動?',
+        {
+          confirmButtonText: '是',
+          cancelButtonText: '否',
+        }
+      )
+      target.isUpdating = true
+      target.status = status
+      const res = await apiUpdateStatus({id,status})
+      if(res.status==='success'){
+        ElMessage({
+          type: 'success',
+          message: '活動已下架',
+        })
+      }else{
+        target.status = prevTargetStatus
+        ElMessage({
+          type: 'error',
+          message: '下架失敗，請洽工作人員',
+        })
+      }
+    }catch{
+      target.status = prevTargetStatus
+      ElMessage({
+        type: 'info',
+        message: '取消下架',
+      })
+    }finally{
+      target.isUpdating = false
+    }
+  }
+
+
+
   return {
+    statusEnumMap:readonly(statusEnumMap),
+    formStatusOptions:readonly(formStatusOptions),
+    filterButtons:readonly(filterButtons),
     activityData,
     fetchActivities,
+    offlineManualConfirm,
+    changeFilter,
+    changePage
   }
 })

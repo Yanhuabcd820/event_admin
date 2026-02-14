@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref,computed } from 'vue'
-
-type AuthStatus = 'authenticated' | 'unauthenticated' | 'pending'
+import type { AuthStatus } from '@/types/activity'
 
 type AuthToken = string|null
 

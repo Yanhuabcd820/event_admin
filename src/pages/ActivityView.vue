@@ -1,51 +1,14 @@
 <script setup lang="ts">
-import {ref} from 'vue'
+import {onMounted} from 'vue'
+import { storeToRefs } from 'pinia'
 import {useActivityStore} from '@/stores/activity.store'
-import type {Activity, Status} from '@/stores/activity.store'
-import { ElMessage, ElMessageBox } from 'element-plus'
 
-const {activityData} = useActivityStore()
-console.log('activityData',activityData);
+const activityStore = useActivityStore()
+const {activityData} = storeToRefs(activityStore)
 
-const statusLabelMap:Record<Status, string> = {
-  online: '活動上線中',
-  offlineManual: '活動已下架',
-  offlineExpired: '活動已過期',
-  draft: '活動草稿',
-  all: '全部'
-}
-
-const offlineConfirm = (id:string) => {
-  ElMessageBox.confirm(
-    '是否確認下架活動?',
-    {
-      confirmButtonText: '是',
-      cancelButtonText: '否',
-    }
-  )
-    .then(() => {
-      ElMessage({
-        type: 'success',
-        message: '活動已刪除',
-      })
-    })
-    .catch(() => {
-      ElMessage({
-        type: 'info',
-        message: '取消刪除',
-      })
-    })
-}
-
-const currentPage = ref<number>(1)
-const handlePageChange = (page: number) => {
-  currentPage.value = page
-  // TODO: 實際應該呼叫 API 取得對應頁數的資料
-}
-const filterActivity=(status:string)=>{
-  // TODO: 實際應該呼叫 API 取得對應狀態的活動資料
-
-}
+onMounted(async () => {
+  await activityStore.fetchActivities()
+})
 </script>
 
 <template>
@@ -64,25 +27,8 @@ const filterActivity=(status:string)=>{
       <!-- 狀態篩選 -->
       <div class="flex flex-wrap items-center gap-8px mb-16px" v-if="activityData.loadingStatus==='success'">
         <span class="text-16px text-[var(--color-text-dark)] leading-32px">活動狀態</span>
-        <el-button
-        >
-          全部活動
-        </el-button>
-        <el-button
-        >
-          活動上線中
-        </el-button>
-        <el-button
-        >
-          活動已下架
-        </el-button>
-        <el-button
-        >
-          活動已過期
-        </el-button>
-        <el-button
-        >
-          草稿
+        <el-button v-for="(btn,idx) in activityStore.filterButtons" :key="`btn-${idx}`" @click="activityStore.changeFilter(btn.filterName)" :type="btn.filterName === activityData.filters ? 'primary' : 'default'">
+          {{ btn.name }}
         </el-button>
       </div>
 
@@ -98,6 +44,7 @@ const filterActivity=(status:string)=>{
           class="activity-card"
           v-for="activity in activityData.list"
           :key="activity.id"
+          v-loading.lock="activity.isUpdating"
         >
           <template #header>
             <div class="flex items-start justify-between">
@@ -109,7 +56,7 @@ const filterActivity=(status:string)=>{
                 effect="plain"
                 class="ml-12px"
               >
-                {{ statusLabelMap[activity.status] }}
+                {{ activityStore.statusEnumMap[activity.status] }}
               </el-tag>
             </div>
             <p class="text-14px leading-20px text-[var(--color-text-dark)] m-0 mt-4px">
@@ -129,10 +76,11 @@ const filterActivity=(status:string)=>{
                 編輯
               </el-button>
               <el-button
+                :disabled="activity.status !== 'online'||activity.isUpdating"
                 type="primary"
                 link
                 class="underline-link"
-                @click="offlineConfirm(activity.id)"
+                @click="activityStore.offlineManualConfirm({id:activity.id,status:'offlineManual'})"
               >
                 下架
               </el-button>
@@ -146,11 +94,11 @@ const filterActivity=(status:string)=>{
       <!-- 分頁器 -->
       <div class="flex justify-center">
         <el-pagination
-          v-model:current-page="currentPage"
+          v-model:current-page="activityData.pageInfo.currentPage"
           :page-size="10"
-          :total="activityData.list.length"
+          :total="activityData.pageInfo.totalCount"
           layout="prev, pager, next"
-          @current-change="handlePageChange"
+          @current-change="activityStore.changePage"
           hide-on-single-page
         />
       </div>

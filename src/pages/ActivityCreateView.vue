@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 // 儲存草稿
 const handleSaveDraft = async () => {
   
@@ -8,6 +9,13 @@ const handleSaveDraft = async () => {
 const handlePublish = async () => {
   
 }
+
+const formModel=ref({
+  title: '622266'
+})
+const formRef=ref()
+// 表單引用
+
 </script>
 
 <template>
@@ -22,11 +30,13 @@ const handlePublish = async () => {
 
       <!-- 表單內容 -->
         <el-form
+          :model="formModel"
+          ref="refForm"
           class="w-auto max-w-640px mx-auto"
         >
           <!-- 活動名稱 -->
           <el-form-item label="活動名稱" prop="title" required>
-            <el-input
+            <el-input v-model="formModel.title"
               placeholder="Please input"
             />
           </el-form-item>
