@@ -1,71 +1,116 @@
 <script setup lang="ts">
-import { ref, watch,computed, onMounted, onUnmounted } from 'vue'
-import { useRoute, onBeforeRouteLeave } from 'vue-router'
-import { storeToRefs } from 'pinia'
-import { useActivityEditStore } from '@/stores/activityEdit.store'
+import { ref, computed, toRaw, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useActivityStore } from '@/stores/activity.store'
-import { useActivityFormStore } from '@/stores/activityForm.store'
-import { useFormValidate } from '@/composables/useFormValidate'
+import useActivityForm from '@/composables/useActivityForm'
+import useActivityEdit from '@/composables/useActivityEdit'
 import { useDirty} from '@/composables/useDirty'
 import { useUnsavedLeaveGuard } from '@/composables/useUnsavedLeaveGuard'
 import { ElMessage } from 'element-plus'
 import { ArrowRight } from '@element-plus/icons-vue'
 import type { ComputedRef } from 'vue'
-import type { CurrentActivity } from '@/services/index'
-import type { FormInstance, } from 'element-plus'
+import type { FormModel, ActivityResponse } from '@/services/index'
 
 const route = useRoute()
-
 const activityStore = useActivityStore()
-const activityEditStore = useActivityEditStore()
-const activityFormStore = useActivityFormStore()
-const { currentActivity, formModel, rules } = storeToRefs(activityFormStore)
+const { formStatusOptions } = activityStore
+const activityForm = useActivityForm()
+const { ruleFormRef, rules } = activityForm
+const activityEdit = useActivityEdit()
 
-const { formValidate } = useFormValidate()
-const { isDirty } = useDirty(currentActivity, formModel)
+// 表單資料
+const formModel = ref<FormModel>({
+  title: '',
+  id: '0',
+  status: 'draft',
+  createdAt: '',
+  updatedAt: '',
+  startAt: '',
+  dueAt: '',
+})
+
+const snapShot = ref<FormModel>({
+  title: '',
+  id: '0',
+  status: 'draft',
+  createdAt: '',
+  updatedAt: '',
+  startAt: '',
+  dueAt: '',
+})
+
+
+const { isDirty } = useDirty(snapShot, formModel)
+
 useUnsavedLeaveGuard(isDirty, () => updateActivityData({ id: routeId.value, payload: formModel.value }))
-
-const ruleFormRef = ref<FormInstance>()
 
 const routeId: ComputedRef<string> = computed(()=>{
   return route.params.id as string
 })
 
-const updateActivityData = async ({ id, payload }: { id: string; payload: CurrentActivity }) => {
-try {
-    if (!ruleFormRef.value) return
-    const ifValid = await formValidate(ruleFormRef.value)
+const updateActivityData = async ({ id, payload }: { id: string; payload: FormModel }): Promise<ActivityResponse | undefined> => {
+  try {
+    if (!ruleFormRef.value) {
+      return { status: 'error', data: null, error: '表單未填寫完畢' }
+    }
 
-    if (!ifValid) return
-    const res = await activityEditStore.updateActivity({ id, payload })
+    const ifValid = await activityForm.formValidate(ruleFormRef.value)
+
+    if (!ifValid) {
+      return { status: 'error', data: null, error: '編輯頁驗證失敗' }
+    }
+    const res = await activityEdit.updateActivity({ id, payload })
+    console.log('res',res);
     
-    if (res.status === "success") {
-      ElMessage({ 
-        type: 'success', 
-        message: '資料儲存成功' 
+    if(res?.status === 'success'){
+      ElMessage({
+        type: 'success',
+        message: '資料已儲存',
       })
-    } else {
-      ElMessage({ 
+    }else{
+      ElMessage({
         type: 'error',
-         message: '資料儲存失敗，請洽工作人員' 
+        message: '資料儲存失敗，請稍後再試',
       })
     }
-    return res
-  } catch (err) {
-    ElMessage({ 
-      type: 'error', 
-      message: '資料儲存發生錯誤，請稍後再試' 
+  } catch (error) {
+    ElMessage({
+      type: 'error',
+      message: error instanceof Error ? error.message : String(error)
     })
   }
 }
 
+const editReset = () => {
+  activityForm.resetForm(formModel, snapShot)
+}
+
+const editSave = ()=>{
+  updateActivityData({ 
+    id: routeId.value, 
+    payload: formModel.value 
+  })
+}
 
 onMounted(async()=>{
-  await activityEditStore.fetchActivityById(routeId.value)
-})
-
-onUnmounted(()=>{
-  activityFormStore.formInitial()
+  try{
+    const res = await activityEdit.fetchActivityById(routeId.value)
+    if(res?.status==='success'){
+      formModel.value = structuredClone(toRaw(activityEdit.activityById.value))
+      snapShot.value = structuredClone(toRaw(activityEdit.activityById.value))
+    }else{
+      ElMessage({
+        type: 'error',
+        message: '資料讀取失敗，請洽工作人員'
+      })
+    }
+  }
+  catch(error){
+    ElMessage({
+      type: 'error',
+      message: error instanceof Error ? error.message : String(error)
+    })
+  }
 })
 
 </script>
@@ -92,7 +137,7 @@ onUnmounted(()=>{
         <!-- 活動狀態 -->
         <el-form-item label="活動狀態" prop="status">
           <el-select placeholder="請選擇活動狀態" v-model="formModel.status" class="w-full">
-            <el-option v-for="status in activityStore.formStatusOptions" :key="status.filterName" :label="status.name" :value="status.filterName" />
+            <el-option v-for="status in formStatusOptions" :key="status.filterName" :label="status.name" :value="status.filterName" />
           </el-select>
         </el-form-item>
 
@@ -109,8 +154,8 @@ onUnmounted(()=>{
         <!-- 操作按鈕 -->
         <el-form-item class="mt-64px">
           <div class="flex gap-44px justify-center w-full">
-            <el-button @click="activityFormStore.editReset"> 取消編輯 </el-button>
-            <el-button @click="updateActivityData({ id: routeId, payload: formModel })" :disabled="!isDirty"> 儲存 </el-button>
+            <el-button @click="editReset"> 取消編輯 </el-button>
+            <el-button @click="editSave" :disabled="!isDirty"> 儲存 </el-button>
           </div>
         </el-form-item>
       </el-form>

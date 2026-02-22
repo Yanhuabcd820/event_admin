@@ -2,9 +2,9 @@ import { onMounted, onUnmounted } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import type { Ref } from 'vue'
-import type { UpdateActivityResponse } from '@/services/index.ts'
+import type { ActivityResponse } from '@/services/index.ts'
 
-export const useUnsavedLeaveGuard=(isDirty: Ref<boolean>, onSave: () => Promise<any>) =>{
+export const useUnsavedLeaveGuard=(isDirty: Ref<boolean>, onSave: () => Promise<ActivityResponse | undefined>) =>{
 
   const beforeWindowUnload = (e: BeforeUnloadEvent) => {
     if (isDirty.value) {
@@ -30,26 +30,14 @@ export const useUnsavedLeaveGuard=(isDirty: Ref<boolean>, onSave: () => Promise<
           type: 'warning',
         }
       )
-
-      const res: UpdateActivityResponse = await onSave()
-      if(res.status === 'success'){
-        ElMessage({
-          type: 'error',
-          message: '資料已儲存',
-        })
-        return true
-        
-      }else{
-        ElMessage({
-          type: 'error',
-          message: '資料儲存失敗，請稍後再試',
-        })
-        return false
-      }
-    } catch(err) {
+      
+      const res = await onSave()
+      if(res?.status === 'success') return true
+      else return false
+    } catch (error) {
       ElMessage({
         type: 'info',
-        message: '取消儲存',
+        message: '取消儲存'
       })
       return true
     }

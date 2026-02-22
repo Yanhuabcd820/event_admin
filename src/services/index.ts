@@ -11,17 +11,28 @@ export type Activity = {
   dueAt:string,
   isUpdating:boolean
 }
-type ActivitiesResponse = {
-  list:Activity[],
-  pageInfo:{
-    currentPage: number,
-    pageSize: number,
-    totalCount:number
-  }
+export type ActivitiesResponse = 
+{
+  status: 'success',
+  data:{
+    list:Activity[],
+    pageInfo:{
+      currentPage: number,
+      pageSize: number,
+      totalCount:number
+    }
+  },
+  error: null
+} | {
+  status: 'error',
+  data: null,
+  error: string
 }
 
 export const apiFetchActivitiesResponse = async({filterStatus,currentPage}: {filterStatus: FilterStatus, currentPage: number}):Promise<ActivitiesResponse>=>{
   return{
+    status: 'success',
+    data: {
       list:[
         {
           title: '秋遊會',
@@ -79,13 +90,15 @@ export const apiFetchActivitiesResponse = async({filterStatus,currentPage}: {fil
         pageSize: 10,
         totalCount:18
       }
-    }
+    },
+    error: null
+  }
 }
 
 
 
 /**該筆活動資料 */
-export type CurrentActivity = {
+export type FormModel = {
   title: string
   id: string
   status: Status
@@ -94,34 +107,12 @@ export type CurrentActivity = {
   startAt: string
   dueAt: string
 }
-export type CurrentActivityResponse = CurrentActivity
 
-export const apiFetchActivityByIdResponse = async (id: string): Promise<CurrentActivityResponse> => {
-  return {
-    title: '秋遊會',
-    id: '1',
-    status: 'online',
-    createdAt: '2026-01-07',
-    updatedAt: '2026-01-17',
-    startAt: '2026-02-27',
-    dueAt: '2026-03-05',
-  }
-}
+export type ActivityResponse = 
+ | { status: 'success', data: FormModel, error: null } 
+ | { status: 'error', data: null, error: string }
 
-
-type UpdateActivity = {
-  title: string
-  status: Status
-  startAt: string
-  dueAt: string
- } | null
-
-export type UpdateActivityResponse = {
-  status: string
-  data: CurrentActivity | null
-  error: any
-}
-export const apiUpdateActivityResponse = async ({ id, payload }: { id: string; payload: UpdateActivity }): Promise<UpdateActivityResponse> => {
+export const apiFetchActivityByIdResponse = async (id: string): Promise<ActivityResponse> => {
   return {
     status:"success",
     data: {
@@ -137,3 +128,42 @@ export const apiUpdateActivityResponse = async ({ id, payload }: { id: string; p
   }
 }
 
+
+type UpdateActivity = {
+  title: string
+  status: Status
+  startAt: string
+  dueAt: string
+ }
+
+export const apiUpdateActivityResponse = async ({ id, payload }: { id: string; payload: UpdateActivity }): Promise<ActivityResponse> => {
+  return {
+    status:"success",
+    data: {
+      title: '秋遊會',
+      id: '1',
+      status: 'online',
+      createdAt: '2026-01-07',
+      updatedAt: '2026-01-17',
+      startAt: '2026-02-27',
+      dueAt: '2026-03-05',
+    },
+    error: null
+  }
+}
+
+export const apiUpdateStatus = async({ id, status }: { id: string; status: Status }): Promise<ActivityResponse>=>{
+  return {
+    status:"success",
+    data: {
+      title: '秋遊會',
+      id: '1',
+      status: 'online',
+      createdAt: '2026-01-07',
+      updatedAt: '2026-01-17',
+      startAt: '2026-02-27',
+      dueAt: '2026-03-05',
+    },
+    error: null
+  }
+}

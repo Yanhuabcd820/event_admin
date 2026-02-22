@@ -1,13 +1,53 @@
 <script setup lang="ts">
-import {onMounted} from 'vue'
-import { storeToRefs } from 'pinia'
-import {useActivityStore} from '@/stores/activity.store'
+import { onMounted } from 'vue'
+import { useActivityStore } from '@/stores/activity.store'
+import useActivityList from '@/composables/useActivityList'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import type { Status } from '@/types/activity'
 
 const activityStore = useActivityStore()
-const {activityData} = storeToRefs(activityStore)
+const { statusEnumMap } = activityStore
+const activityList = useActivityList()
+const { activitiesData } = activityList
+
+const offlineManualConfirm = async({ id, status }: { id: string, status: Status }) => {
+  try{
+    await ElMessageBox.confirm(
+      '是否確認下架活動?',
+      {
+        confirmButtonText: '是',
+        cancelButtonText: '否',
+      }
+    )
+    const res = await activityList.setOfflineManualConfirm({ id, status })
+    if (res?.status === 'success') {
+      ElMessage({ type: 'success', message: '活動已下架' })
+    } else {
+      ElMessage({
+        type: 'error',
+        message: '資料讀取失敗，請洽工作人員'
+      })
+    }
+  }catch(error){
+    ElMessage({ type: 'info', message: '取消下架' })
+  }
+}
 
 onMounted(async () => {
-  await activityStore.fetchActivities()
+  try{
+    const res = await activityList.fetchActivities()
+    if(res?.status==='error'){
+      ElMessage({
+        type: 'error',
+        message: res.error || '資料讀取失敗，請洽工作人員'
+      })
+    }
+  }catch(error){
+    ElMessage({
+      type: 'error',
+      message: error instanceof Error ? error.message : String(error)
+    })
+  }
 })
 </script>
 
@@ -16,7 +56,7 @@ onMounted(async () => {
     <!-- 主容器 -->
     <div class="max-w-836px mx-auto">
       <!-- 標題列 -->
-      <div class="flex items-center justify-between mb-24px" v-if="activityData.loadingStatus==='success'">
+      <div class="flex items-center justify-between mb-24px" v-if="activitiesData.loadingStatus==='success'">
         <h1 class="text-22px font-medium leading-32px text-[var(--color-text-dark)] m-0">
           活動管理
         </h1>
@@ -25,24 +65,24 @@ onMounted(async () => {
         </el-button>
       </div>
       <!-- 狀態篩選 -->
-      <div class="flex flex-wrap items-center gap-8px mb-16px" v-if="activityData.loadingStatus==='success'">
+      <div class="flex flex-wrap items-center gap-8px mb-16px" v-if="activitiesData.loadingStatus==='success'">
         <span class="text-16px text-[var(--color-text-dark)] leading-32px">活動狀態</span>
-        <el-button v-for="(btn,idx) in activityStore.filterButtons" :key="`btn-${idx}`" @click="activityStore.changeFilter(btn.filterName)" :type="btn.filterName === activityData.filters ? 'primary' : 'default'">
+        <el-button v-for="(btn,idx) in activityList.filterButtons" :key="`btn-${idx}`" @click="activityList.changeFilter(btn.filterName)" :type="btn.filterName === activitiesData.filters ? 'primary' : 'default'">
           {{ btn.name }}
         </el-button>
       </div>
 
-      <div v-if="activityData.loadingStatus==='loading'" v-loading.lock="true" 
+      <div v-if="activitiesData.loadingStatus==='loading'" v-loading.lock="true" 
       element-loading-background="rgba(0, 0, 0, 0.8)">
       </div>
-      <el-empty v-else-if="activityData.loadingStatus==='error'" :description="activityData.error || '資料讀取失敗，請洽工作人員'" />
+      <el-empty v-else-if="activitiesData.loadingStatus==='error'" :description="activitiesData.error || '資料讀取失敗，請洽工作人員'" />
       <!-- 活動列表 -->
-      <div class="flex flex-col gap-16px mb-24px" v-else-if="activityData.loadingStatus==='success'">
-        <el-empty v-if="activityData.list.length === 0" description="尚無活動" />
+      <div class="flex flex-col gap-16px mb-24px" v-else-if="activitiesData.loadingStatus==='success'">
+        <el-empty v-if="activitiesData.list.length === 0" description="尚無活動" />
         <el-card v-else
           shadow="always"
           class="activity-card"
-          v-for="activity in activityData.list"
+          v-for="activity in activitiesData.list"
           :key="activity.id"
           v-loading.lock="activity.isUpdating"
         >
@@ -56,7 +96,7 @@ onMounted(async () => {
                 effect="plain"
                 class="ml-12px"
               >
-                {{ activityStore.statusEnumMap[activity.status] }}
+                {{ statusEnumMap[activity.status] }}
               </el-tag>
             </div>
             <p class="text-14px leading-20px text-[var(--color-text-dark)] m-0 mt-4px">
@@ -80,7 +120,7 @@ onMounted(async () => {
                 type="primary"
                 link
                 class="underline-link"
-                @click="activityStore.offlineManualConfirm({id:activity.id,status:'offlineManual'})"
+                @click="offlineManualConfirm({id:activity.id,status:'offlineManual'})"
               >
                 下架
               </el-button>
@@ -94,11 +134,11 @@ onMounted(async () => {
       <!-- 分頁器 -->
       <div class="flex justify-center">
         <el-pagination
-          v-model:current-page="activityData.pageInfo.currentPage"
+          v-model:current-page="activitiesData.pageInfo.currentPage"
           :page-size="10"
-          :total="activityData.pageInfo.totalCount"
+          :total="activitiesData.pageInfo.totalCount"
           layout="prev, pager, next"
-          @current-change="activityStore.changePage"
+          @current-change="activityList.changePage"
           hide-on-single-page
         />
       </div>
