@@ -2,8 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import Login from '@/pages/LoginView.vue'
 import Activity from '@/pages/ActivityView.vue'
-import ActivityCreate from '@/pages/ActivityCreateView.vue'
-import ActivityEdit from '@/pages/ActivityEditView.vue'
+import ActivityUpsert from '@/pages/ActivityUpsertView.vue'
 import NotFound from '@/pages/NotFoundView.vue'
 
 const router = createRouter({
@@ -28,13 +27,13 @@ const router = createRouter({
     },
     {
       path:'/activity/create',
-      component: ActivityCreate,
+      component: ActivityUpsert,
       name: 'ActivityCreate',
       // meta:{requiresAuth:true}
     },
     {
       path:'/activity/:id/edit',
-      component: ActivityEdit,
+      component: ActivityUpsert,
       name: 'ActivityEdit',
       // meta:{requiresAuth:true}
     },

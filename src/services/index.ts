@@ -129,14 +129,30 @@ export const apiFetchActivityByIdResponse = async (id: string): Promise<Activity
 }
 
 
-type UpdateActivity = {
+type UpsertActivity = {
   title: string
   status: Status
   startAt: string
   dueAt: string
  }
 
-export const apiUpdateActivityResponse = async ({ id, payload }: { id: string; payload: UpdateActivity }): Promise<ActivityResponse> => {
+export const apiCreateActivityResponse = async ({ payload }: { payload:UpsertActivity }): Promise<ActivityResponse> => {
+  return {
+    status:"success",
+    data: {
+      title: '秋遊會 PART II',
+      id: '10',
+      status: 'online',
+      createdAt: '2026-01-07',
+      updatedAt: '2026-01-17',
+      startAt: '2026-02-27',
+      dueAt: '2026-03-05',
+    },
+    error: null
+  }
+}
+
+export const apiUpdateActivityResponse = async ({ id, payload }: { id: string; payload: UpsertActivity }): Promise<ActivityResponse> => {
   return {
     status:"success",
     data: {
