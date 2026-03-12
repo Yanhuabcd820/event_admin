@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed, toRaw, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useActivityStore } from '@/stores/activity.store'
 import useActivityForm from '@/composables/useActivityForm'
 import useActivityEdit from '@/composables/useActivityEdit'
@@ -13,7 +13,6 @@ import type { ComputedRef } from 'vue'
 import type { FormModel, ActivityResponse } from '@/services/index'
 
 const route = useRoute()
-const router = useRouter()
 const activityStore = useActivityStore()
 const { formStatusOptions } = activityStore
 const activityForm = useActivityForm()
@@ -44,6 +43,7 @@ const snapShot = ref<FormModel>({
 
 const { isDirty } = useDirty(snapShot, formModel)
 
+useUnsavedLeaveGuard(isDirty, () => updateActivityData({ id: routeId.value, payload: formModel.value }))
 
 const routeId: ComputedRef<string> = computed(()=>{
   return route.params.id as string
@@ -76,7 +76,7 @@ const updateActivityData = async ({ id, payload }: { id: string; payload: FormMo
         type: 'error',
         message: '資料儲存失敗，請稍後再試',
       })
-    }      
+    }
   } catch (error) {
     ElMessage({
       type: 'error',
@@ -117,7 +117,7 @@ const editSave = async()=>{
   })
 }
 
-const createSave = async(): Promise<ActivityResponse | undefined> =>{
+const createSave = async()=>{
   try {
     if (!ruleFormRef.value) {
       return { status: 'error', data: null, error: '表單未填寫完畢' }
@@ -128,20 +128,13 @@ const createSave = async(): Promise<ActivityResponse | undefined> =>{
     if (!ifValid) {
       return { status: 'error', data: null, error: '表單驗證失敗' }
     }
-    const res = await activityCreate.createActivity({payload:formModel.value})
+    const res = await activityCreate.createActivity(formModel.value)
     
     if(res?.status === 'success'){
       snapShot.value = structuredClone(toRaw(formModel.value))
-      
       ElMessage({
         type: 'success',
         message: '資料已儲存',
-      })
-      router.replace({ 
-        name: 'ActivityEdit', 
-        params: { 
-          id: res.data?.id 
-        }
       })
     }else{
       ElMessage({
@@ -149,20 +142,15 @@ const createSave = async(): Promise<ActivityResponse | undefined> =>{
         message: '資料儲存失敗，請稍後再試',
       })
     }
-    return res
   } catch (error) {
     ElMessage({
       type: 'error',
       message: error instanceof Error ? error.message : String(error)
     })
   }
-}
 
 
-if (isEditMode.value) {
-  useUnsavedLeaveGuard(isDirty, () => updateActivityData({ id: routeId.value, payload: formModel.value }))
-} else {
-  useUnsavedLeaveGuard(isDirty, () => createSave())
+
 }
 
 watch(() => route.params.id, async(newId)=>{
@@ -219,7 +207,7 @@ onMounted(async()=>{
           <div class="flex gap-44px justify-center w-full">
             <el-button @click="editReset"> 取消編輯 </el-button>
             <el-button @click="editSave" :disabled="!isDirty" v-if="isEditMode"> 儲存 </el-button>
-            <el-button @click="createSave" :disabled="!isDirty" v-else> 儲存A </el-button>
+            <el-button @click="createSave" :disabled="!isDirty" v-else> 儲存 </el-button>
           </div>
         </el-form-item>
       </el-form>
