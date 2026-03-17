@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+
 import { apiFetchActivityByIdResponse, apiUpdateActivityResponse } from '@/services/index.ts'
 import type { FormModel, ActivityResponse } from '@/services/index'
 
@@ -24,25 +25,31 @@ const useActivityEdit=()=>{
     dueAt: '',
   })
 
-  const fetchActivityById = async (id: string) : Promise<ActivityResponse | undefined> => {
-    if(isFetching.value) return
+  let latestRequestId = 0
+  const fetchActivityById = async (id: string): Promise<ActivityResponse | undefined> => {
+    const thisRequestId = ++latestRequestId
     isFetching.value = true
-
     try {
       const res = await apiFetchActivityByIdResponse(id)
+      // 只更新最新請求的資料
+      if (thisRequestId !== latestRequestId) return
+
       if (res.status === "success") {
         activityById.value = structuredClone(res.data)
-      } 
+      }
       return res
-
     } catch (error) {
+      if (thisRequestId !== latestRequestId) return
       return {
         status: 'error',
-        data: null, 
+        data: null,
         error: error instanceof Error ? error.message : String(error)
       }
     } finally {
-      isFetching.value = false
+      // 只在最新請求結束時才關閉 loading
+      if (thisRequestId === latestRequestId) {
+        isFetching.value = false
+      }
     }
   }
 

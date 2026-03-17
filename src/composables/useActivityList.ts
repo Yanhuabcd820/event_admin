@@ -45,43 +45,54 @@ const useActivityList = ()=>{
     ...formStatusOptions
   ]
   
-
   /**
    * fetchActivities - 用於根據當前頁面和篩選狀態從 API 獲取活動數據。
    * idle → loading → success
    * idle → loading → error
    * */
-  const fetchActivities = async ({currentPage=1, filterStatus='all'}: { currentPage?: number; filterStatus?: FilterStatus } = {}): Promise<ActivitiesResponse | undefined> => {
-    
-    if(activitiesData.value.loadingStatus === 'loading') return
+  let requestId = 0
+  const fetchActivities = async (
+  { currentPage = 1, filterStatus = 'all' }: { currentPage?: number; filterStatus?: FilterStatus } = {}
+): Promise<ActivitiesResponse | undefined> => {
 
-    activitiesData.value.loadingStatus = 'loading'
-    activitiesData.value.error = null
-    try{
-      const res = await apiFetchActivitiesResponse({filterStatus,currentPage})
-      if(res.status === 'success'){
-        activitiesData.value.list = res.data.list
-        activitiesData.value.pageInfo = {
-          currentPage: res.data.pageInfo.currentPage,
-          pageSize: res.data.pageInfo.pageSize,
-          totalCount: res.data.pageInfo.totalCount,
-        }
-        activitiesData.value.loadingStatus = 'success'
-      }else{
-        activitiesData.value.loadingStatus = 'error'
+  const currentRequestId = ++requestId
+
+  activitiesData.value.loadingStatus = 'loading'
+  activitiesData.value.error = null
+
+  try {
+    const res = await apiFetchActivitiesResponse({ filterStatus, currentPage })
+
+    if (currentRequestId !== requestId) return
+
+    if (res.status === 'success') {
+      activitiesData.value.list = res.data.list
+      activitiesData.value.pageInfo = {
+        currentPage: res.data.pageInfo.currentPage,
+        pageSize: res.data.pageInfo.pageSize,
+        totalCount: res.data.pageInfo.totalCount,
       }
-      
-      return res
-
-    }catch(error){
+      activitiesData.value.loadingStatus = 'success'
+    } else {
       activitiesData.value.loadingStatus = 'error'
-      return {
-        status: 'error',
-        data: null, 
-        error: error instanceof Error ? error.message : String(error)
-      }
+    }
+
+    return res
+
+  } catch (error) {
+    if (currentRequestId !== requestId) return
+
+    activitiesData.value.loadingStatus = 'error'
+    activitiesData.value.error =
+      error instanceof Error ? error.message : String(error)
+
+    return {
+      status: 'error',
+      data: null,
+      error: activitiesData.value.error
     }
   }
+}
 
   /**
    * changeFilter - 設置篩選狀態
