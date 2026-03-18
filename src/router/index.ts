@@ -29,7 +29,7 @@ const router = createRouter({
       path:'/activity/create',
       component: ActivityUpsert,
       name: 'ActivityCreate',
-      // meta:{requiresAuth:true}
+      meta:{requiresAuth:true}
     },
     {
       path:'/activity/:id/edit',
