@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { getActivityById, updateActivity } from '@/repositories/activity.repository.ts'
+import { getActivityById, updateTheActivity } from '@/repositories/activity.repository.ts'
 import type { FormModel, ActivityResponse } from '@/services/index'
 
 /**是否正在讀取資料 */
@@ -8,9 +8,7 @@ type IsFetching = boolean
 /**是否正在更新資料 */
 type IsUpdating = boolean
 
-
-const useActivityEdit=()=>{
-
+const useActivityEdit = () => {
   const isFetching = ref<IsFetching>(false)
   const isUpdating = ref<IsUpdating>(false)
 
@@ -33,7 +31,7 @@ const useActivityEdit=()=>{
       // 只更新最新請求的資料
       if (thisRequestId !== latestRequestId) return
 
-      if (res.status === "success") {
+      if (res.status === 'success') {
         activityById.value = structuredClone(res.data)
       }
       return res
@@ -42,7 +40,7 @@ const useActivityEdit=()=>{
       return {
         status: 'error',
         data: null,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       }
     } finally {
       // 只在最新請求結束時才關閉 loading
@@ -52,34 +50,38 @@ const useActivityEdit=()=>{
     }
   }
 
-  const updateActivity = async ({ id, payload }: { id: string; payload: FormModel }) : Promise<ActivityResponse | undefined> =>  {
-    if(isUpdating.value) return
+  const updateActivity = async ({
+    id,
+    payload,
+  }: {
+    id: string
+    payload: FormModel
+  }): Promise<ActivityResponse | undefined> => {
+    if (isUpdating.value) return
     isUpdating.value = true
     try {
-      const res = await updateActivity({id, payload })
-      if (res?.status === "success") {
+      const res = await updateTheActivity({ id, payload })
+      if (res?.status === 'success') {
         activityById.value = structuredClone(res.data)
-      } 
+      }
       return res
-        
     } catch (error) {
       return {
         status: 'error',
-        data: null, 
-        error: error instanceof Error ? error.message : String(error)
+        data: null,
+        error: error instanceof Error ? error.message : String(error),
       }
     } finally {
       isUpdating.value = false
     }
   }
 
-
   return {
     isFetching,
     isUpdating,
     activityById,
     fetchActivityById,
-    updateActivity
+    updateActivity,
   }
 }
 export default useActivityEdit

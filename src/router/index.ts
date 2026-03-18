@@ -8,55 +8,46 @@ import NotFound from '@/pages/NotFoundView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', 
-      name: 'Home',
-      component: Login,
-      meta:{ifLogin:true}
-    },
+    { path: '/', name: 'Home', component: Login, meta: { ifLogin: true } },
     {
-      path:'/login',
+      path: '/login',
       component: Login,
       name: 'Login',
-      meta:{ifLogin:true}
+      meta: { ifLogin: true },
     },
     {
-      path:'/activity',
+      path: '/activity',
       component: Activity,
       name: 'Activity',
-      meta:{requiresAuth:true}
+      meta: { requiresAuth: true },
     },
     {
-      path:'/activity/create',
+      path: '/activity/create',
       component: ActivityUpsert,
       name: 'ActivityCreate',
-      meta:{requiresAuth:true}
+      meta: { requiresAuth: true },
     },
     {
-      path:'/activity/:id/edit',
+      path: '/activity/:id/edit',
       component: ActivityUpsert,
       name: 'ActivityEdit',
-      meta:{requiresAuth:true}
+      meta: { requiresAuth: true },
     },
-    { path: '/:pathMatch(.*)*', 
-      name: 'NotFound', 
-      component: NotFound 
-    }
-
+    { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound },
   ],
 })
 
 router.beforeEach(async (to) => {
   const authStore = useAuthStore()
-  if(authStore.authStatus==='pending'){
+  if (authStore.authStatus === 'pending') {
     await authStore.verifyToken()
   }
-  
-  if(to.meta.requiresAuth && authStore.authStatus==='unauthenticated'){
-    return {path:'/login'}
-  }else if(to.meta.ifLogin && authStore.authStatus==='authenticated'){
-    return {path:'/activity'}
-  }
 
+  if (to.meta.requiresAuth && authStore.authStatus === 'unauthenticated') {
+    return { path: '/login' }
+  } else if (to.meta.ifLogin && authStore.authStatus === 'authenticated') {
+    return { path: '/activity' }
+  }
 })
 
 export default router

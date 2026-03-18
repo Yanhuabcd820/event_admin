@@ -1,4 +1,4 @@
-import axios from "axios"
+import axios from 'axios'
 
 export type FormLogin = {
   username: string
@@ -29,11 +29,10 @@ type VerifyTokenResponse =
   | {
       status: 'error'
       data: null
-      error: string 
+      error: string
     }
   | null
-export const apiFetchAuthResponse = async (loginData: object
-): Promise<AuthResponse> => {
+export const apiFetchAuthResponse = async (loginData: object): Promise<AuthResponse> => {
   const { username, password } = loginData as FormLogin
   return {
     status: 'success',
@@ -43,7 +42,7 @@ export const apiFetchAuthResponse = async (loginData: object
     error: null,
   }
 }
-export const apiVerifyToken = async(token: string|null):Promise<VerifyTokenResponse>=>{
+export const apiVerifyToken = async (token: string | null): Promise<VerifyTokenResponse> => {
   return {
     status: 'success',
     data: {

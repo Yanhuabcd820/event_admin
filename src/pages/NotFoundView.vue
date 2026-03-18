@@ -1,5 +1,4 @@
-<script lang="ts" setup>
-</script>
+<script lang="ts" setup></script>
 <template>
   <div>
     <el-empty description="此頁面不存在" />
