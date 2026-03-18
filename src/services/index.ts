@@ -1,4 +1,3 @@
-import axios from "axios"
 import type {Status,FilterStatus} from '@/types/activity'
 
 export type Activity = {

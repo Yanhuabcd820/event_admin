@@ -11,19 +11,19 @@ const router = createRouter({
     { path: '/', 
       name: 'Home',
       component: Login,
-      // meta:{ifLogin:true}
+      meta:{ifLogin:true}
     },
     {
       path:'/login',
       component: Login,
       name: 'Login',
-      // meta:{ifLogin:true}
+      meta:{ifLogin:true}
     },
     {
       path:'/activity',
       component: Activity,
       name: 'Activity',
-      // meta:{requiresAuth:true}
+      meta:{requiresAuth:true}
     },
     {
       path:'/activity/create',
@@ -35,7 +35,7 @@ const router = createRouter({
       path:'/activity/:id/edit',
       component: ActivityUpsert,
       name: 'ActivityEdit',
-      // meta:{requiresAuth:true}
+      meta:{requiresAuth:true}
     },
     { path: '/:pathMatch(.*)*', 
       name: 'NotFound', 
@@ -46,16 +46,16 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
-  // const authStore = useAuthStore()
-  // if(authStore.authStatus==='pending'){
-  //   await authStore.verifyToken()
-  // }
+  const authStore = useAuthStore()
+  if(authStore.authStatus==='pending'){
+    await authStore.verifyToken()
+  }
   
-  // if(to.meta.requiresAuth && authStore.authStatus==='unauthenticated'){
-  //   return {path:'/login'}
-  // }else if(to.meta.ifLogin && authStore.authStatus==='authenticated'){
-  //   return {path:'/activity'}
-  // }
+  if(to.meta.requiresAuth && authStore.authStatus==='unauthenticated'){
+    return {path:'/login'}
+  }else if(to.meta.ifLogin && authStore.authStatus==='authenticated'){
+    return {path:'/activity'}
+  }
 
 })
 
