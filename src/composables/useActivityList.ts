@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { apiFetchActivitiesResponse, apiUpdateStatus } from '@/services/index.ts'
+import { getActivities, updateActivityStatus } from '@/repositories/activity.repository.ts'
 import { useActivityStore } from '@/stores/activity.store'
 import type { Status, FilterStatus, LoadingStatus } from '@/types/activity'
 import type { StatusDetail } from '@/stores/activity.store.ts'
@@ -61,7 +61,7 @@ const useActivityList = ()=>{
   activitiesData.value.error = null
 
   try {
-    const res = await apiFetchActivitiesResponse({ filterStatus, currentPage })
+    const res = await getActivities({ filterStatus, currentPage })
 
     if (currentRequestId !== requestId) return
 
@@ -122,7 +122,7 @@ const useActivityList = ()=>{
     target.status = status
   
     try{
-      const res = await apiUpdateStatus({id,status})
+      const res = await updateActivityStatus({id, status})
       if(res.status === 'error'){
         target.status = prevTargetStatus
       }

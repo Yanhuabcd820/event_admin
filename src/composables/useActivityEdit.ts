@@ -1,6 +1,5 @@
 import { ref } from 'vue'
-
-import { apiFetchActivityByIdResponse, apiUpdateActivityResponse } from '@/services/index.ts'
+import { getActivityById, updateActivity } from '@/repositories/activity.repository.ts'
 import type { FormModel, ActivityResponse } from '@/services/index'
 
 /**是否正在讀取資料 */
@@ -30,7 +29,7 @@ const useActivityEdit=()=>{
     const thisRequestId = ++latestRequestId
     isFetching.value = true
     try {
-      const res = await apiFetchActivityByIdResponse(id)
+      const res = await getActivityById(id)
       // 只更新最新請求的資料
       if (thisRequestId !== latestRequestId) return
 
@@ -57,8 +56,8 @@ const useActivityEdit=()=>{
     if(isUpdating.value) return
     isUpdating.value = true
     try {
-      const res = await apiUpdateActivityResponse({ id, payload })
-      if (res.status === "success") {
+      const res = await updateActivity({id, payload })
+      if (res?.status === "success") {
         activityById.value = structuredClone(res.data)
       } 
       return res
