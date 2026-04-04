@@ -1,12 +1,11 @@
 import { ref } from 'vue'
 import { getActivities, updateActivityStatus } from '@/repositories/activity.repository.ts'
 import { useActivityStore } from '@/stores/activity.store'
-import type { Status, FilterStatus, LoadingStatus } from '@/types/activity'
+import type { Status, FilterStatus } from '@/types/activity'
 import type { StatusDetail } from '@/stores/activity.store.ts'
 import type { Activity, ActivityResponse, ActivitiesResponse } from '@/services/index.ts'
 
 type ActivitiesData = {
-  loadingStatus: LoadingStatus
   list: Activity[]
   pageInfo: {
     currentPage: number
@@ -18,7 +17,6 @@ type ActivitiesData = {
 }
 
 const activitiesData = ref<ActivitiesData>({
-  loadingStatus: 'idle',
   list: [],
   filters: 'all',
   pageInfo: {
@@ -41,7 +39,7 @@ const useActivityList = () => {
     },
     ...formStatusOptions,
   ]
-
+  const isActivityListLoading = ref(false)
   /**
    * fetchActivities - 用於根據當前頁面和篩選狀態從 API 獲取活動數據。
    * idle → loading → success
@@ -54,11 +52,11 @@ const useActivityList = () => {
   }: { currentPage?: number; filterStatus?: FilterStatus } = {}): Promise<
     ActivitiesResponse | undefined
   > => {
+    if (isActivityListLoading.value) return
+    isActivityListLoading.value = true
+
     const currentRequestId = ++requestId
-
-    activitiesData.value.loadingStatus = 'loading'
     activitiesData.value.error = null
-
     try {
       const res = await getActivities({ filterStatus, currentPage })
 
@@ -71,16 +69,11 @@ const useActivityList = () => {
           pageSize: res.data.pageInfo.pageSize,
           totalCount: res.data.pageInfo.totalCount,
         }
-        activitiesData.value.loadingStatus = 'success'
-      } else {
-        activitiesData.value.loadingStatus = 'error'
       }
-
       return res
     } catch (error) {
       if (currentRequestId !== requestId) return
 
-      activitiesData.value.loadingStatus = 'error'
       activitiesData.value.error = error instanceof Error ? error.message : String(error)
 
       return {
@@ -88,6 +81,8 @@ const useActivityList = () => {
         data: null,
         error: activitiesData.value.error,
       }
+    } finally {
+      isActivityListLoading.value = false
     }
   }
 
@@ -146,6 +141,7 @@ const useActivityList = () => {
   return {
     filterButtons,
     activitiesData,
+    isActivityListLoading,
     fetchActivities,
     setOfflineManualConfirm,
     changeFilter,

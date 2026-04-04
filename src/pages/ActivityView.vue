@@ -8,7 +8,7 @@ import type { Status } from '@/types/activity'
 const activityStore = useActivityStore()
 const { statusEnumMap } = activityStore
 const activityList = useActivityList()
-const { activitiesData } = activityList
+const { activitiesData, isActivityListLoading } = activityList
 
 const offlineManualConfirm = async ({ id, status }: { id: string; status: Status }) => {
   try {
@@ -51,16 +51,13 @@ onMounted(async () => {
 <template>
   <div
     class="min-h-screen bg-[var(--color-bg-page)] px-16px py-24px min-w-768px box-border"
-    v-loading="activitiesData.loadingStatus === 'loading'"
+    v-loading="isActivityListLoading"
     element-loading-background="rgba(0, 0, 0, 0.8)"
   >
     <!-- 主容器 -->
     <div class="max-w-836px mx-auto">
       <!-- 標題列 -->
-      <div
-        class="flex items-center justify-between mb-24px"
-        v-if="activitiesData.loadingStatus === 'success'"
-      >
+      <div class="flex items-center justify-between mb-24px">
         <h1 class="text-22px font-medium leading-32px text-[var(--color-text-dark)] m-0">
           活動管理
         </h1>
@@ -74,10 +71,7 @@ onMounted(async () => {
         </el-button>
       </div>
       <!-- 狀態篩選 -->
-      <div
-        class="flex flex-wrap items-center gap-8px mb-16px"
-        v-if="activitiesData.loadingStatus === 'success'"
-      >
+      <div class="flex flex-wrap items-center gap-8px mb-16px">
         <span class="text-16px text-[var(--color-text-dark)] leading-32px">活動狀態</span>
         <el-button
           v-for="(btn, idx) in activityList.filterButtons"
@@ -89,23 +83,10 @@ onMounted(async () => {
         </el-button>
       </div>
 
-      <div
-        v-if="activitiesData.loadingStatus === 'loading'"
-        v-loading.lock="true"
-        element-loading-background="rgba(0, 0, 0, 0.8)"
-      ></div>
-      <el-empty
-        v-else-if="activitiesData.loadingStatus === 'error'"
-        :description="activitiesData.error || '資料讀取失敗，請洽工作人員'"
-      />
       <!-- 活動列表 -->
-      <div
-        class="flex flex-col gap-16px mb-24px"
-        v-else-if="activitiesData.loadingStatus === 'success'"
-      >
+      <div class="flex flex-col gap-16px mb-24px">
         <el-empty v-if="activitiesData.list.length === 0" description="尚無活動" />
         <el-card
-          v-else
           shadow="always"
           class="activity-card"
           v-for="activity in activitiesData.list"
@@ -156,7 +137,7 @@ onMounted(async () => {
         </el-card>
       </div>
       <!-- 分頁器 -->
-      <div class="flex justify-center">
+      <!-- <div class="flex justify-center">
         <el-pagination
           v-model:current-page="activitiesData.pageInfo.currentPage"
           :page-size="10"
@@ -165,7 +146,7 @@ onMounted(async () => {
           @current-change="activityList.changePage"
           hide-on-single-page
         />
-      </div>
+      </div> -->
     </div>
   </div>
 </template>

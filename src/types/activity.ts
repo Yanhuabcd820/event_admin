@@ -20,8 +20,3 @@ export type Status = 'online' | 'offlineManual' | 'offlineExpired' | 'draft'
  * all: 所有活動
  */
 export type FilterStatus = Status | 'all'
-
-/**
- * LoadingStatus - 加載狀態
- */
-export type LoadingStatus = 'idle' | 'loading' | 'success' | 'error'
