@@ -38,7 +38,7 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
-  const authStore = useAuthStore()
+  const authStore = useAuthStore()  
   if (authStore.authStatus === 'pending') {
     await authStore.verifyToken()
   }
