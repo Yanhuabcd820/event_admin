@@ -11,7 +11,7 @@ export const useAuthStore = defineStore('auth', () => {
   const authToken = ref<AuthToken>(null)
   let verifyingPromise: Promise<void> | null = null
 
-  const authStatus = ref<AuthStatus>('authenticated')
+  const authStatus = ref<AuthStatus>('unauthenticated')
   const isLoggedIn = computed<boolean>(() => {
     return authStatus.value === 'authenticated'
   })
@@ -76,12 +76,19 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  const logout = () => {
+    authToken.value = null
+    authStatus.value = 'unauthenticated'
+    localStorage.removeItem('token')
+  }
+
   return {
     authToken,
     authStatus,
     isLoggedIn,
     rulesLogin,
     login,
+    logout,
     restoreToken,
     verifyToken,
   }

@@ -1,4 +1,15 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.store'
+
+const router = useRouter()
+const authStore = useAuthStore()
+
+const logout = () => {
+  authStore.logout()
+  router.push('/login')
+}
+</script>
 
 <template>
   <el-header class="h-64px bg-white border-b border-gray-200 p-0 flex items-center min-w-768px">
@@ -13,10 +24,18 @@
           >活動管理</router-link
         >
         <router-link
+          v-if="authStore.authStatus === 'unauthenticated'"
           to="/login"
           class="nav-link text-gray-600 no-underline px-12px py-8px rounded-4px transition-all duration-300"
           >登入</router-link
         >
+        <button
+          v-else
+          @click="logout"
+          class="nav-link text-gray-600 no-underline px-12px py-8px rounded-4px transition-all duration-300 border-transparent bg-transparent cursor-pointer"
+        >
+          登出
+        </button>
       </div>
     </div>
   </el-header>
