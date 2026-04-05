@@ -7,6 +7,7 @@ import UnoCSS from 'unocss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/event_admin/',
   plugins: [
     vue(),
     vueDevTools(),
