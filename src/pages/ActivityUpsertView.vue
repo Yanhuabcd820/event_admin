@@ -25,20 +25,14 @@ const activityCreate = useActivityCreate()
 // 表單資料
 const formModel = ref<FormModel>({
   title: '',
-  id: '0',
   status: 'draft',
-  createdAt: '',
-  updatedAt: '',
   startAt: '',
   dueAt: '',
 })
 
 const snapShot = ref<FormModel>({
   title: '',
-  id: '0',
   status: 'draft',
-  createdAt: '',
-  updatedAt: '',
   startAt: '',
   dueAt: '',
 })
@@ -166,19 +160,13 @@ watch(
     if (!isEditMode.value) {
       formModel.value = {
         title: '',
-        id: '0',
         status: 'draft',
-        createdAt: '',
-        updatedAt: '',
         startAt: '',
         dueAt: '',
       }
       snapShot.value = {
         title: '',
-        id: '0',
         status: 'draft',
-        createdAt: '',
-        updatedAt: '',
         startAt: '',
         dueAt: '',
       }

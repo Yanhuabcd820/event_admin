@@ -10,7 +10,7 @@ export type AuthResponse =
       data: {
         token: string
       }
-      error: null
+    error: null
     }
   | {
       status: 'error'
@@ -32,8 +32,8 @@ type VerifyTokenResponse =
       error: string
     }
   | null
-export const apiFetchAuthResponse = async (loginData: object): Promise<AuthResponse> => {
-  const { username, password } = loginData as FormLogin
+export const apiFetchAuthResponse = async (loginData: FormLogin): Promise<AuthResponse> => {
+  const { username, password } = loginData
   return {
     status: 'success',
     data: {

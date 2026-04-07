@@ -61,7 +61,7 @@ export const useAuthStore = defineStore('auth', () => {
     password: [{ required: true, message: '請輸入密碼', trigger: 'blur' }],
   })
 
-  const login = async (loginData: object) => {
+  const login = async (loginData: FormLogin) => {
     const res = await apiFetchAuthResponse(loginData)
     if (res && res.status === 'success' && res.data) {
       authToken.value = res.data.token

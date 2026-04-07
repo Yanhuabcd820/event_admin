@@ -1,3 +1,4 @@
+import { supabase } from './supabaseClient'
 import type { Status, FilterStatus } from '@/types/activity'
 
 type ApiResponse<T> =
@@ -5,13 +6,13 @@ type ApiResponse<T> =
   | { status: 'error'; data: null; error: string }
 
 export type Activity = {
-  title: string
   id: string
+  title: string
   status: Status
-  createdAt: string
-  updatedAt: string
   startAt: string
   dueAt: string
+  createdAt: string
+  updatedAt: string
   isUpdating: boolean
 }
 
@@ -31,65 +32,31 @@ export const apiFetchActivitiesResponse = async ({
   filterStatus: FilterStatus
   currentPage: number
 }): Promise<ActivitiesResponse> => {
+  const pageSize = 10
+  let query = supabase
+    .from('activities')
+    .select('*', { count: 'exact' })
+    .order('createdAt', { ascending: false })
+    .range((currentPage - 1) * pageSize, currentPage * pageSize - 1)
+
+  if (filterStatus && filterStatus !== 'all') {
+    query = query.eq('status', filterStatus)
+  }
+
+  const { data, error, count } = await query
+
+  if (error) {
+    return { status: 'error', data: null, error: error.message }
+  }
+
   return {
     status: 'success',
     data: {
-      list: [
-        {
-          title: '秋遊會',
-          id: '1',
-          status: 'online',
-          createdAt: '2026-01-07',
-          updatedAt: '2026-01-17',
-          startAt: '2026-02-27',
-          dueAt: '2026-03-05',
-          isUpdating: false,
-        },
-        {
-          title: '2026馬到成功春酒會',
-          id: '2',
-          status: 'offlineManual',
-          createdAt: '2026-02-07',
-          updatedAt: '2026-02-17',
-          startAt: '2026-03-27',
-          dueAt: '2026-05-05',
-          isUpdating: false,
-        },
-        {
-          title: '馬到成功',
-          id: '3',
-          status: 'offlineExpired',
-          createdAt: '2025-11-07',
-          updatedAt: '2025-12-17',
-          startAt: '2026-01-27',
-          dueAt: '2026-05-05',
-          isUpdating: false,
-        },
-        {
-          title: '馬到成功',
-          id: '4',
-          status: 'draft',
-          createdAt: '2025-01-07',
-          updatedAt: '2025-02-17',
-          startAt: '2025-11-27',
-          dueAt: '2025-12-05',
-          isUpdating: false,
-        },
-        {
-          title: '2025馬到成功',
-          id: '5',
-          status: 'draft',
-          createdAt: '2025-01-07',
-          updatedAt: '2025-02-17',
-          startAt: '2025-11-27',
-          dueAt: '2025-12-05',
-          isUpdating: false,
-        },
-      ],
+      list: data as Activity[],
       pageInfo: {
-        currentPage: 2,
-        pageSize: 10,
-        totalCount: 18,
+        currentPage,
+        pageSize,
+        totalCount: count ?? 0,
       },
     },
     error: null,
@@ -99,10 +66,7 @@ export const apiFetchActivitiesResponse = async ({
 /**該筆活動資料 */
 export type FormModel = {
   title: string
-  id: string
   status: Status
-  createdAt: string
-  updatedAt: string
   startAt: string
   dueAt: string
 }
@@ -110,19 +74,23 @@ export type FormModel = {
 export type ActivityResponse = ApiResponse<FormModel>
 
 export const apiFetchActivityByIdResponse = async (id: string): Promise<ActivityResponse> => {
+  
+  let query = supabase
+  .from('activities')
+  .select('*')
+  .eq('id', id)
+  .single()
+
+  const { data, error } = await query
+  if (error) {
+    return { status: 'error', data: null, error: error.message }
+  }
   return {
     status: 'success',
-    data: {
-      title: '秋遊會',
-      id: '1',
-      status: 'online',
-      createdAt: '2026-01-07',
-      updatedAt: '2026-01-17',
-      startAt: '2026-02-27',
-      dueAt: '2026-03-05',
-    },
+    data,
     error: null,
   }
+  
 }
 
 type UpsertActivity = {
@@ -137,17 +105,19 @@ export const apiCreateActivityResponse = async ({
 }: {
   payload: UpsertActivity
 }): Promise<ActivityResponse> => {
+
+const { data, error } = await supabase
+  .from('activities')
+  .insert([payload])
+  .select()
+  .single()
+
+  if (error) {
+    return { status: 'error', data: null, error: error.message }
+  }
   return {
     status: 'success',
-    data: {
-      title: '秋遊會 PART II',
-      id: '10',
-      status: 'online',
-      createdAt: '2026-01-07',
-      updatedAt: '2026-01-17',
-      startAt: '2026-02-27',
-      dueAt: '2026-03-05',
-    },
+    data,
     error: null,
   }
 }
@@ -159,19 +129,24 @@ export const apiUpdateActivityResponse = async ({
   id: string
   payload: UpsertActivity
 }): Promise<ActivityResponse> => {
+
+  const { data, error } = await supabase
+  .from('activities')
+  .update([payload])
+  .eq('id', id)
+  .select()
+  .single()
+  
+  if (error) {
+    return { status: 'error', data: null, error: error.message }
+  }
+
   return {
     status: 'success',
-    data: {
-      title: '秋遊會',
-      id: '1',
-      status: 'online',
-      createdAt: '2026-01-07',
-      updatedAt: '2026-01-17',
-      startAt: '2026-02-27',
-      dueAt: '2026-03-05',
-    },
+    data,
     error: null,
   }
+
 }
 
 export const apiUpdateStatus = async ({
@@ -181,17 +156,21 @@ export const apiUpdateStatus = async ({
   id: string
   status: Status
 }): Promise<ActivityResponse> => {
+
+  const { data, error } = await supabase
+  .from('activities')
+  .update({status})
+  .eq('id', id)
+  .select()
+  .single()
+
+  if (error) {
+    return { status: 'error', data: null, error: error.message }
+  }
   return {
     status: 'success',
-    data: {
-      title: '秋遊會',
-      id: '1',
-      status: 'online',
-      createdAt: '2026-01-07',
-      updatedAt: '2026-01-17',
-      startAt: '2026-02-27',
-      dueAt: '2026-03-05',
-    },
+    data,
     error: null,
   }
+  
 }

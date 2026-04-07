@@ -6,16 +6,26 @@ import {
   apiUpdateStatus,
 } from '@/services/index'
 import type { FilterStatus, Status } from '@/types/activity'
-import type { ActivitiesResponse, ActivityResponse, FormModel } from '@/services/index'
+import type { ActivitiesResponse, ActivityResponse, FormModel, Activity } from '@/services/index'
 
 export const getActivities = async (params: {
   filterStatus: FilterStatus
   currentPage: number
 }): Promise<ActivitiesResponse> => {
-  // 可作為資料轉換使用
-  return apiFetchActivitiesResponse(params)
+  const res = await apiFetchActivitiesResponse(params)
+  if (res.status === 'success' && res.data) {
+    res.data.list = res.data.list.map(item => ({
+      ...item,
+      createdAt: item.createdAt
+        ? new Date(item.createdAt).toISOString().split('T')[0]
+        : '',
+      updatedAt: item.updatedAt
+        ? new Date(item.updatedAt).toISOString().split('T')[0]
+        : '',
+    })) as Activity[]
+  }
+  return res
 }
-
 export const getActivityById = async (id: string): Promise<ActivityResponse> => {
   return apiFetchActivityByIdResponse(id)
 }

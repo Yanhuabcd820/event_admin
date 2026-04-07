@@ -14,10 +14,7 @@ const useActivityEdit = () => {
 
   const activityById = ref<FormModel>({
     title: '',
-    id: '0',
     status: 'draft',
-    createdAt: '',
-    updatedAt: '',
     startAt: '',
     dueAt: '',
   })
