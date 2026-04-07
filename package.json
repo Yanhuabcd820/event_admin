@@ -15,11 +15,12 @@
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix --cache",
     "format": "prettier --write --experimental-cli src/",
-  "predeploy": "npm run build",
-  "deploy": "gh-pages -d dist"
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
+    "@supabase/supabase-js": "^2.101.1",
     "axios": "^1.13.5",
     "element-plus": "^2.13.1",
     "lodash": "^4.17.23",
