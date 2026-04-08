@@ -5,6 +5,7 @@ import useActivityForm from '@/composables/useActivityForm'
 import { useRouter } from 'vue-router'
 import type { FormLogin } from '@/services/auth'
 import type { FormInstance } from 'element-plus'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -15,24 +16,30 @@ const ruleFormLoginRef = ref<FormInstance>()
 
 // 登入資料
 const formLogin = ref<FormLogin>({
-  username: '',
+  mail: '',
   password: '',
 })
 
+const loginError = ref(false)
+
 const handleLogin = async () => {
+  loginError.value = false
   try {
     const ifValid = await activityForm.formValidate(ruleFormLoginRef.value)
-
     if (!ifValid) {
       return
     }
     const result = await authStore.login(formLogin.value)
-
     if (result?.status === 'success') {
       router.push({ name: 'Activity' })
+    } else {
+      loginError.value = true
     }
   } catch (error) {
-    return { status: 'error', data: null, error: '登入失敗' }
+    ElMessage({
+      type: 'error',
+      message: '系統錯誤，請稍後再試',
+    })
   }
 }
 </script>
@@ -53,8 +60,8 @@ const handleLogin = async () => {
         size="default"
         class="w-auto max-w-400px mx-auto"
       >
-        <el-form-item label="帳號" prop="username">
-          <el-input v-model="formLogin.username" placeholder="Please input" clearable />
+        <el-form-item label="帳號" prop="mail">
+          <el-input v-model="formLogin.mail" placeholder="Please input" clearable />
         </el-form-item>
 
         <el-form-item label="密碼" prop="password">
@@ -65,6 +72,9 @@ const handleLogin = async () => {
             show-password
           />
         </el-form-item>
+        <div v-if="loginError" class="text-red-500 text-center text-14px">
+          帳號密碼有誤，請重新再試
+        </div>
 
         <el-form-item class="mt-64px" label-width="0">
           <div class="flex justify-center w-full">

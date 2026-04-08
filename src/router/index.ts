@@ -39,9 +39,6 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const authStore = useAuthStore()  
-  if (authStore.authStatus === 'pending') {
-    await authStore.verifyToken()
-  }
 
   if (to.meta.requiresAuth && authStore.authStatus === 'unauthenticated') {
     return { path: '/login' }
