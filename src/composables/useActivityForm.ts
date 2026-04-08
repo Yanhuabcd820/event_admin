@@ -1,6 +1,6 @@
 import { ref, toRaw } from 'vue'
 import type { Ref } from 'vue'
-import type { FormModel } from '@/services/index'
+import type { FormModel } from '@/services/activities'
 import type { FormInstance, FormRules } from 'element-plus'
 
 const useActivityForm = () => {

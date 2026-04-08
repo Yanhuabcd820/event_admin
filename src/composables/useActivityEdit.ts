@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { getActivityById, updateTheActivity } from '@/repositories/activity.repository.ts'
-import type { FormModel, ActivityResponse } from '@/services/index'
+import type { FormModel, ActivityResponse } from '@/services/activities'
 
 /**是否正在讀取資料 */
 type IsFetching = boolean

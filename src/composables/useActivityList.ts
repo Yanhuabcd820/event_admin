@@ -3,7 +3,7 @@ import { getActivities, updateActivityStatus } from '@/repositories/activity.rep
 import { useActivityStore } from '@/stores/activity.store'
 import type { Status, FilterStatus } from '@/types/activity'
 import type { StatusDetail } from '@/stores/activity.store.ts'
-import type { Activity, ActivityResponse, ActivitiesResponse } from '@/services/index.ts'
+import type { Activity, ActivityResponse, ActivitiesResponse } from '@/services/activities'
 
 type ActivitiesData = {
   list: Activity[]

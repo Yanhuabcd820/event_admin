@@ -4,9 +4,9 @@ import {
   apiCreateActivityResponse,
   apiUpdateActivityResponse,
   apiUpdateStatus,
-} from '@/services/index'
+} from '@/services/activities'
 import type { FilterStatus, Status } from '@/types/activity'
-import type { ActivitiesResponse, ActivityResponse, FormModel, Activity } from '@/services/index'
+import type { ActivitiesResponse, ActivityResponse, FormModel, Activity } from '@/services/activities'
 
 export const getActivities = async (params: {
   filterStatus: FilterStatus

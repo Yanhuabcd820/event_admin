@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { createTheActivity } from '@/repositories/activity.repository.ts'
-import type { FormModel, ActivityResponse } from '@/services/index'
+import type { FormModel, ActivityResponse } from '@/services/activities'
 /**是否正在創建資料 */
 type IsCreating = boolean
 const useActivityCreate = () => {

@@ -10,12 +10,12 @@ import { useUnsavedLeaveGuard } from '@/composables/useUnsavedLeaveGuard'
 import { ElMessage } from 'element-plus'
 import { ArrowRight } from '@element-plus/icons-vue'
 import type { ComputedRef } from 'vue'
-import type { FormModel, ActivityResponse } from '@/services/index'
+import type { FormModel, ActivityResponse } from '@/services/activities'
 
 const route = useRoute()
 const router = useRouter()
 const activityStore = useActivityStore()
-const { formStatusOptions, statusEnumMap } = activityStore
+const { formStatusOptions } = activityStore
 const activityForm = useActivityForm()
 const { ruleFormRef, rules } = activityForm
 const activityEdit = useActivityEdit()
