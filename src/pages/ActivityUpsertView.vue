@@ -238,7 +238,7 @@ watch(
         <!-- 操作按鈕 -->
         <el-form-item class="mt-64px">
           <div class="flex gap-44px justify-center w-full">
-            <el-button @click="editReset"> 取消編輯 </el-button>
+            <el-button @click="editReset" :disabled="!isDirty"> 取消編輯 </el-button>
             <el-button @click="editSave" :disabled="!isDirty" v-if="isEditMode"> 儲存 </el-button>
             <el-button @click="createSave" :disabled="!isDirty" v-else> 儲存 </el-button>
           </div>
