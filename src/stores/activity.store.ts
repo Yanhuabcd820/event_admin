@@ -26,10 +26,6 @@ export const useActivityStore = defineStore('activity', () => {
       filterName:'offlineManual'
     },
     {
-      name:'活動已過期',
-      filterName:'offlineExpired'
-    },
-    {
       name:'草稿',
       filterName:'draft'
     }

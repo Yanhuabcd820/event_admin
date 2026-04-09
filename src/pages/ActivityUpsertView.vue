@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed, toRaw, onMounted } from 'vue'
+import { ref, watch, computed, toRaw } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useActivityStore } from '@/stores/activity.store'
 import useActivityForm from '@/composables/useActivityForm'
@@ -15,27 +15,13 @@ import type { FormModel, ActivityResponse } from '@/services/activities'
 const route = useRoute()
 const router = useRouter()
 const activityStore = useActivityStore()
-const { formStatusOptions } = activityStore
+const { formStatusOptions, statusEnumMap } = activityStore
 const activityForm = useActivityForm()
-const { ruleFormRef, rules } = activityForm
+const { formModel, snapShot, ruleFormRef, rules } = activityForm
+
 const activityEdit = useActivityEdit()
 const { isFetching, isUpdating } = activityEdit
 const activityCreate = useActivityCreate()
-
-// 表單資料
-const formModel = ref<FormModel>({
-  title: '',
-  status: 'draft',
-  startAt: '',
-  dueAt: '',
-})
-
-const snapShot = ref<FormModel>({
-  title: '',
-  status: 'draft',
-  startAt: '',
-  dueAt: '',
-})
 
 const { isDirty } = useDirty(snapShot, formModel)
 
@@ -208,7 +194,12 @@ watch(
           <el-input v-model="formModel.title" maxlength="20" placeholder="請填寫活動名稱" />
         </el-form-item>
         <el-form-item label="活動狀態" prop="status">
-          <el-select placeholder="請選擇活動狀態" v-model="formModel.status" class="w-full">
+          <el-select
+            v-if="formModel.status !== 'offlineExpired'"
+            placeholder="請選擇活動狀態"
+            v-model="formModel.status"
+            class="w-full"
+          >
             <el-option
               v-for="status in formStatusOptions"
               :key="status.filterName"
@@ -216,6 +207,9 @@ watch(
               :value="status.filterName"
             />
           </el-select>
+          <div v-else class="text-[var(--color-text-dark)]">
+            {{ statusEnumMap['offlineExpired'] }}
+          </div>
         </el-form-item>
 
         <!-- 活動起日 -->
@@ -237,6 +231,7 @@ watch(
             value-format="YYYY-MM-DD"
             placeholder="請選擇活動迄日"
             v-model="formModel.dueAt"
+            :disabled-date="activityForm.disableDueAtDate"
           />
         </el-form-item>
 
