@@ -16,7 +16,7 @@
     "lint": "eslint . --fix --cache",
     "format": "prettier --write --experimental-cli src/",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "vite build && cp dist/index.html dist/404.html && gh-pages -d dist"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
