@@ -1,13 +1,21 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
-const logout = () => {
-  authStore.logout()
-  router.push('/login')
+const logout = async () => {
+  const errorRes = await authStore.logout()
+  if (errorRes) {
+    ElMessage({
+      type: 'error',
+      message: '登出功能異常，請稍後再試',
+    })
+  } else {
+    router.push('/login')
+  }
 }
 </script>
 

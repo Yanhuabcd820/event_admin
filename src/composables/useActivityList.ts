@@ -3,7 +3,7 @@ import { getActivities, updateActivityStatus } from '@/repositories/activity.rep
 import { useActivityStore } from '@/stores/activity.store'
 import type { Status, FilterStatus } from '@/types/activity'
 import type { StatusDetail } from '@/stores/activity.store.ts'
-import type { Activity, ActivityResponse, ActivitiesResponse } from '@/services/index.ts'
+import type { Activity, ActivityResponse, ActivitiesResponse } from '@/services/activities'
 
 type ActivitiesData = {
   list: Activity[]
@@ -31,21 +31,13 @@ const useActivityList = () => {
   const activityStore = useActivityStore()
   const { formStatusOptions } = activityStore
 
-  // 篩選狀態按鈕
-  const filterButtons: StatusDetail[] = [
-    {
-      name: '全部活動',
-      filterName: 'all',
-    },
-    ...formStatusOptions,
-  ]
+
   const isActivityListLoading = ref(false)
   /**
    * fetchActivities - 用於根據當前頁面和篩選狀態從 API 獲取活動數據。
    * idle → loading → success
    * idle → loading → error
    * */
-  let requestId = 0
   const fetchActivities = async ({
     currentPage = 1,
     filterStatus = 'all',
@@ -54,15 +46,19 @@ const useActivityList = () => {
   > => {
     if (isActivityListLoading.value) return
     isActivityListLoading.value = true
-
-    const currentRequestId = ++requestId
     activitiesData.value.error = null
     try {
       const res = await getActivities({ filterStatus, currentPage })
-
-      if (currentRequestId !== requestId) return
-
       if (res.status === 'success') {
+        // 先判斷過期活動並自動更新狀態
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        for (const item of res.data.list) {
+          if (item.dueAt && new Date(item.dueAt) < today && item.status !== 'offlineExpired') {
+            await changeStatus({ id: item.id, status: 'offlineExpired' as Status })
+            item.status = 'offlineExpired'
+          }
+        }
         activitiesData.value.list = res.data.list
         activitiesData.value.pageInfo = {
           currentPage: res.data.pageInfo.currentPage,
@@ -72,10 +68,7 @@ const useActivityList = () => {
       }
       return res
     } catch (error) {
-      if (currentRequestId !== requestId) return
-
       activitiesData.value.error = error instanceof Error ? error.message : String(error)
-
       return {
         status: 'error',
         data: null,
@@ -107,7 +100,7 @@ const useActivityList = () => {
     await fetchActivities(params)
   }
 
-  const setOfflineManualConfirm = async ({
+  const changeStatus = async ({
     id,
     status,
   }: {
@@ -139,11 +132,10 @@ const useActivityList = () => {
   }
 
   return {
-    filterButtons,
     activitiesData,
     isActivityListLoading,
     fetchActivities,
-    setOfflineManualConfirm,
+    changeStatus,
     changeFilter,
     changePage,
   }

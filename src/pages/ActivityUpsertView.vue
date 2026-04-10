@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed, toRaw, onMounted } from 'vue'
+import { ref, watch, computed, toRaw } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useActivityStore } from '@/stores/activity.store'
 import useActivityForm from '@/composables/useActivityForm'
@@ -10,38 +10,18 @@ import { useUnsavedLeaveGuard } from '@/composables/useUnsavedLeaveGuard'
 import { ElMessage } from 'element-plus'
 import { ArrowRight } from '@element-plus/icons-vue'
 import type { ComputedRef } from 'vue'
-import type { FormModel, ActivityResponse } from '@/services/index'
+import type { FormModel, ActivityResponse } from '@/services/activities'
 
 const route = useRoute()
 const router = useRouter()
 const activityStore = useActivityStore()
 const { formStatusOptions, statusEnumMap } = activityStore
 const activityForm = useActivityForm()
-const { ruleFormRef, rules } = activityForm
+const { formModel, snapShot, ruleFormRef, rules } = activityForm
+
 const activityEdit = useActivityEdit()
 const { isFetching, isUpdating } = activityEdit
 const activityCreate = useActivityCreate()
-
-// 表單資料
-const formModel = ref<FormModel>({
-  title: '',
-  id: '0',
-  status: 'draft',
-  createdAt: '',
-  updatedAt: '',
-  startAt: '',
-  dueAt: '',
-})
-
-const snapShot = ref<FormModel>({
-  title: '',
-  id: '0',
-  status: 'draft',
-  createdAt: '',
-  updatedAt: '',
-  startAt: '',
-  dueAt: '',
-})
 
 const { isDirty } = useDirty(snapShot, formModel)
 
@@ -166,19 +146,13 @@ watch(
     if (!isEditMode.value) {
       formModel.value = {
         title: '',
-        id: '0',
         status: 'draft',
-        createdAt: '',
-        updatedAt: '',
         startAt: '',
         dueAt: '',
       }
       snapShot.value = {
         title: '',
-        id: '0',
         status: 'draft',
-        createdAt: '',
-        updatedAt: '',
         startAt: '',
         dueAt: '',
       }
@@ -220,7 +194,12 @@ watch(
           <el-input v-model="formModel.title" maxlength="20" placeholder="請填寫活動名稱" />
         </el-form-item>
         <el-form-item label="活動狀態" prop="status">
-          <el-select placeholder="請選擇活動狀態" v-model="formModel.status" class="w-full">
+          <el-select
+            v-if="formModel.status !== 'offlineExpired'"
+            placeholder="請選擇活動狀態"
+            v-model="formModel.status"
+            class="w-full"
+          >
             <el-option
               v-for="status in formStatusOptions"
               :key="status.filterName"
@@ -228,6 +207,9 @@ watch(
               :value="status.filterName"
             />
           </el-select>
+          <div v-else class="text-[var(--color-text-dark)]">
+            {{ statusEnumMap['offlineExpired'] }}
+          </div>
         </el-form-item>
 
         <!-- 活動起日 -->
@@ -249,13 +231,14 @@ watch(
             value-format="YYYY-MM-DD"
             placeholder="請選擇活動迄日"
             v-model="formModel.dueAt"
+            :disabled-date="activityForm.disableDueAtDate"
           />
         </el-form-item>
 
         <!-- 操作按鈕 -->
         <el-form-item class="mt-64px">
           <div class="flex gap-44px justify-center w-full">
-            <el-button @click="editReset"> 取消編輯 </el-button>
+            <el-button @click="editReset" :disabled="!isDirty"> 取消編輯 </el-button>
             <el-button @click="editSave" :disabled="!isDirty" v-if="isEditMode"> 儲存 </el-button>
             <el-button @click="createSave" :disabled="!isDirty" v-else> 儲存 </el-button>
           </div>

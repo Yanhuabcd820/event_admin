@@ -2,7 +2,7 @@ import { onMounted, onUnmounted } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import type { Ref } from 'vue'
-import type { ActivityResponse } from '@/services/index.ts'
+import type { ActivityResponse } from '@/services/activities'
 
 export const useUnsavedLeaveGuard = (
   isDirty: Ref<boolean>,

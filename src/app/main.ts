@@ -17,7 +17,7 @@ app.use(createPinia())
 app.use(ElementPlus)
 
 const authStore = useAuthStore()
-authStore.restoreToken()
-app.use(router)
+await authStore.checkAuth()
 
+app.use(router)
 app.mount('#app')

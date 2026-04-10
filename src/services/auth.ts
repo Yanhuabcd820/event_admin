@@ -1,16 +1,17 @@
-import axios from 'axios'
+import { supabase } from './supabaseClient'
 
 export type FormLogin = {
-  username: string
+  mail: string
   password: string
 }
+
 export type AuthResponse =
   | {
       status: 'success'
       data: {
-        token: string
+        user: string
       }
-      error: null
+    error: null
     }
   | {
       status: 'error'
@@ -18,36 +19,38 @@ export type AuthResponse =
       error: string
     }
   | null
-type VerifyTokenResponse =
-  | {
-      status: 'success'
+
+export const loginAuth = async (loginData: FormLogin): Promise<AuthResponse> => {
+  const { mail, password } = loginData
+  const res = await signIn(mail, password)
+  
+  if (res?.status === 'success') {
+    return {
+      status: 'success',
       data: {
-        valid: boolean
-      }
-      error: null
+        user: res.user?.email ?? '',
+      },
+      error: null,
     }
-  | {
-      status: 'error'
-      data: null
-      error: string
+  } else {
+    return {
+      status: 'error',
+      data: null,
+      error: res.error ?? '',
     }
-  | null
-export const apiFetchAuthResponse = async (loginData: object): Promise<AuthResponse> => {
-  const { username, password } = loginData as FormLogin
-  return {
-    status: 'success',
-    data: {
-      token: 'sffe323#$@sdfet*^&%$#@!sdf',
-    },
-    error: null,
   }
 }
-export const apiVerifyToken = async (token: string | null): Promise<VerifyTokenResponse> => {
-  return {
-    status: 'success',
-    data: {
-      valid: true,
-    },
-    error: null,
+
+export const signIn = async (email: string, password: string) => {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) {
+    return { status: 'error', error: error.message }
   }
+  return { status: 'success', user: data.user }
+}
+
+export const signOutAuth = async () => {
+  const { error } = await supabase.auth.signOut()
+  
+  return { error }
 }

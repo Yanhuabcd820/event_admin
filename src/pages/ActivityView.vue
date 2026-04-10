@@ -10,13 +10,13 @@ const { statusEnumMap } = activityStore
 const activityList = useActivityList()
 const { activitiesData, isActivityListLoading } = activityList
 
-const offlineManualConfirm = async ({ id, status }: { id: string; status: Status }) => {
+const setOfflineManualStatus = async ({ id, status }: { id: string; status: Status }) => {
   try {
     await ElMessageBox.confirm('是否確認下架活動?', {
       confirmButtonText: '是',
       cancelButtonText: '否',
     })
-    const res = await activityList.setOfflineManualConfirm({ id, status })
+    const res = await activityList.changeStatus({ id, status })
     if (res?.status === 'success') {
       ElMessage({ type: 'success', message: '活動已下架' })
     } else {
@@ -74,7 +74,7 @@ onMounted(async () => {
       <div class="flex flex-wrap items-center gap-8px mb-16px">
         <span class="text-16px text-[var(--color-text-dark)] leading-32px">活動狀態</span>
         <el-button
-          v-for="(btn, idx) in activityList.filterButtons"
+          v-for="(btn, idx) in activityStore.filterButtons"
           :key="`btn-${idx}`"
           @click="activityList.changeFilter(btn.filterName)"
           :type="btn.filterName === activitiesData.filters ? 'primary' : 'default'"
@@ -125,7 +125,7 @@ onMounted(async () => {
                 type="primary"
                 link
                 class="underline-link"
-                @click="offlineManualConfirm({ id: activity.id, status: 'offlineManual' })"
+                @click="setOfflineManualStatus({ id: activity.id, status: 'offlineManual' })"
               >
                 下架
               </el-button>
