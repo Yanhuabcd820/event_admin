@@ -74,7 +74,7 @@ onMounted(async () => {
       <div class="flex flex-wrap items-center gap-8px mb-16px">
         <span class="text-16px text-[var(--color-text-dark)] leading-32px">活動狀態</span>
         <el-button
-          v-for="(btn, idx) in activityList.filterButtons"
+          v-for="(btn, idx) in activityStore.filterButtons"
           :key="`btn-${idx}`"
           @click="activityList.changeFilter(btn.filterName)"
           :type="btn.filterName === activitiesData.filters ? 'primary' : 'default'"

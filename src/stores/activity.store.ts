@@ -8,32 +8,38 @@ export type StatusDetail = {
 }
 
 export const useActivityStore = defineStore('activity', () => {
-
-  const statusEnumMap:Record<Status, string> = {
+  const statusEnumMap: Record<Status | 'all', string> = {
+    all: '全部活動',
+    draft: '活動草稿',
     online: '活動上線中',
     offlineManual: '活動已下架',
     offlineExpired: '活動已過期',
-    draft: '活動草稿'
   }
 
-  const formStatusOptions:StatusDetail[]=[
+  const formStatusOptions: StatusDetail[] = [
     {
-      name:'活動上線中',
-      filterName:'online'
+      name: statusEnumMap.draft,
+      filterName: 'draft',
     },
     {
-      name:'活動已下架',
-      filterName:'offlineManual'
+      name: statusEnumMap.online,
+      filterName: 'online',
     },
     {
-      name:'草稿',
-      filterName:'draft'
-    }
+      name: statusEnumMap.offlineManual,
+      filterName: 'offlineManual',
+    },
   ]
 
-  return { 
-    statusEnumMap,
-    formStatusOptions
-   }
+  const filterButtons: StatusDetail[] = [
+    { name: statusEnumMap.all, filterName: 'all' },
+    ...formStatusOptions,
+    { name: statusEnumMap.offlineExpired, filterName: 'offlineExpired' },
+  ]
 
+  return {
+    statusEnumMap,
+    formStatusOptions,
+    filterButtons,
+  }
 })

@@ -31,14 +31,7 @@ const useActivityList = () => {
   const activityStore = useActivityStore()
   const { formStatusOptions } = activityStore
 
-  // 篩選狀態按鈕
-  const filterButtons: StatusDetail[] = [
-    {
-      name: '全部活動',
-      filterName: 'all',
-    },
-    ...formStatusOptions,
-  ]
+
   const isActivityListLoading = ref(false)
   /**
    * fetchActivities - 用於根據當前頁面和篩選狀態從 API 獲取活動數據。
@@ -139,7 +132,6 @@ const useActivityList = () => {
   }
 
   return {
-    filterButtons,
     activitiesData,
     isActivityListLoading,
     fetchActivities,

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { loginAuth, signOutAuth } from '@/services/auth.ts'
+import { ref } from 'vue'
 import { supabase } from '@/services/supabaseClient'
+import { loginAuth, signOutAuth } from '@/services/auth.ts'
 import type { FormLogin } from '@/services/auth'
 import type { AuthStatus } from '@/types/activity'
 import type { FormRules } from 'element-plus'
@@ -19,6 +19,8 @@ export const useAuthStore = defineStore('auth', () => {
     } else {
       authStatus.value = 'unauthenticated'
     }
+    console.log(data);
+    
   }
   
   // 表單工具
@@ -38,8 +40,10 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const logout = () => {
-    signOutAuth()
+  const logout = async() => {
+    const { error } = await signOutAuth()
+    if(error) return { error }
+    authStatus.value = 'unauthenticated'
   }
 
   return {
