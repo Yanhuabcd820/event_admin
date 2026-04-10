@@ -1,6 +1,8 @@
 # Event Admin 活動管理平台
 
-一個以 Vue 3 + TypeScript 開發的活動管理後台系統，採用前端模擬 API 完整呈現活動管理流程，具備登入驗證、權限控管、活動列表、新增與編輯等功能。
+- 以 Vue 3 + TypeScript 開發的活動管理後台系統。
+- 使用 Supabase 作為 Backend-as-a-Service（BaaS），並透過 Supabase 提供的 RESTful API 存取活動資料（CRUD）
+- 使用 Supabase Auth 管理登入狀態，登入後才能進行活動資料的新增、編輯等功能
 
 🔗 **線上預覽**：[https://yanhuabcd820.github.io/event_admin/](https://yanhuabcd820.github.io/event_admin/)
 
@@ -22,8 +24,6 @@
 | 狀態管理   | Pinia              |
 | 建構工具   | Vite               |
 | 樣式       | CSS / Sass         |
-| 測試       | Vitest             |
-| 程式碼規範 | ESLint             |
 
 ---
 
@@ -102,22 +102,6 @@ npm run test:unit
 # 執行 ESLint 程式碼檢查
 npm run lint
 ```
-
----
-
-## 📝 備註
-
-- 本專案目前使用前端模擬 API（`src/services/`），資料為靜態假資料
-- 架構設計保留日後串接真實後端 RESTful API 的擴充彈性
-- 登入驗證邏輯透過 Pinia（`auth.store`）統一管理
-- 支援未儲存離開提示（`useUnsavedLeaveGuard`），提升使用者體驗
-
----
-
-## 🛠️ 建議開發環境
-
-- [VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
-- [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
 
 ---
 
