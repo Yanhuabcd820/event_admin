@@ -4,11 +4,10 @@
 - 使用 Supabase 作為 Backend-as-a-Service（BaaS），並透過 Supabase 提供的 RESTful API 存取活動資料（CRUD）
 - 使用 Supabase Auth 管理登入狀態，登入後才能進行活動資料的新增、編輯等功能
 
-🔗 **線上預覽**：[https://yanhuabcd820.github.io/event_admin/](https://yanhuabcd820.github.io/event_admin/)
-
 ---
 
-# 測試帳號
+## 線上預覽
+[https://yanhuabcd820.github.io/event_admin/](https://yanhuabcd820.github.io/event_admin/)
 
 登入帳號：`user@example.com`
 密碼：`123456`
@@ -20,6 +19,7 @@
 | 類別       | 技術               |
 | ---------- | ------------------ |
 | 前端框架   | Vue 3 + TypeScript |
+| 後端服務   | Supabase           |
 | 路由管理   | Vue Router 4       |
 | 狀態管理   | Pinia              |
 | 建構工具   | Vite               |
