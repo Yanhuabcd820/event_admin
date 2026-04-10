@@ -7,6 +7,7 @@
 ---
 
 ## 線上預覽
+
 [https://yanhuabcd820.github.io/event_admin/](https://yanhuabcd820.github.io/event_admin/)
 
 登入帳號：`user@example.com`
@@ -16,14 +17,14 @@
 
 ## 🚀 技術棧
 
-| 類別       | 技術               |
-| ---------- | ------------------ |
-| 前端框架   | Vue 3 + TypeScript |
-| 後端服務   | Supabase           |
-| 路由管理   | Vue Router 4       |
-| 狀態管理   | Pinia              |
-| 建構工具   | Vite               |
-| 樣式       | CSS / Sass         |
+| 類別     | 技術               |
+| -------- | ------------------ |
+| 前端框架 | Vue 3 + TypeScript |
+| 後端服務 | Supabase           |
+| 路由管理 | Vue Router 4       |
+| 狀態管理 | Pinia              |
+| 建構工具 | Vite               |
+| 樣式     | CSS / Sass         |
 
 ---
 
@@ -47,7 +48,7 @@ src/
 │   └── NotFoundView.vue
 ├── repositories/     # 資料存取層
 ├── router/           # 路由設定
-├── services/         # 模擬 API 資料層
+├── services/         # Supabase API 資料層
 ├── stores/           # Pinia 狀態管理
 │   ├── activity.store.ts
 │   └── auth.store.ts
@@ -91,16 +92,6 @@ npm run dev
 ```sh
 # 型別檢查並建置正式版本
 npm run build
-```
-
-```sh
-# 執行單元測試
-npm run test:unit
-```
-
-```sh
-# 執行 ESLint 程式碼檢查
-npm run lint
 ```
 
 ---
